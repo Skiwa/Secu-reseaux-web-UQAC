@@ -1,0 +1,28 @@
+events {
+    worker_connections  1024;
+}
+
+http {
+    server {
+        listen 80;
+    
+        rewrite ^ https://$http_host$request_uri? permanent;
+    }
+    
+    server {
+        listen 443 ssl;
+        server_name group3.stremblay.com;
+    
+        ssl_certificate group3.stremblay.com.crt;
+        ssl_certificate_key group3.stremblay.com.key;
+    
+    
+        location / {
+            root /srv/group3;
+        }
+    
+        location /api/ {
+            proxy_pass http://localhost:8080/api/;
+        }
+    }
+}

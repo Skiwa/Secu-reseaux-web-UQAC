@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Register page</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+  <!-- Bootstrap and stylesheets-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <style>
+    input{
+      padding: 5px;
+      margin: 5px;
+    };
+  </style>
+</head>
+<body ng-app="app" ng-controller="ctrl" style="min-height:100%" >
+<div class="container">
+  <div class="row">
+      <div id="logo-container"></div>
+      <div class="col-sm-12 col-md-10 col-md-offset-2 text-center">
+        <form id="registerForm" name="registerForm" method="POST" class="col-sm-12 col-md-10 col-md-offset-1" style="margin: auto;margin-top: 20%;margin-bottom:20%;padding:20px;">
+          <h1 class="text-center">Register form</h1></br>
+          <input type="text" ng-model="fields.username" placeholder="username" name="username" required></input></br>
+          <input type="password" ng-model="fields.password" placeholder="password" name="password" required></input></br>
+          <input type="email" ng-model="fields.mail" placeholder="mail" name="mail" ng-model="text" required></input></br>
+          <span ng-show="registerForm.mail.$error.email">Not a valid e-mail address</span>
+          <button ng-click="validate()" form="registerForm" class="btn-primary">Submit</button>
+          <div class="alert alert-darnger angular-error" style="white-space: pre;text-align: left;margin-top:20px;display:none"></div>
+          <div class="alert alert-success angular-success" style="white-space: pre;text-align: left;margin-top:20px;display:none"></div>
+          </div>
+        </form>
+      </div>
+  </div>
+</div>
+
+
+  <script>
+
+  $('.angular-error').hide();
+
+  var app=angular.module('app',[]);
+  app.controller('ctrl', function($scope,$http,$window) {
+      $scope.validate=function(){
+          $http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+          $http({
+            url: '/api/users',
+            method:'POST',
+            data: {
+              username:$scope.fields.username,
+              password:$scope.fields.password,
+              mail:$scope.fields.mail
+            }
+          }).then(
+			  function(data){
+				if(data.status==201){
+				  console.log("User created, redirecting you to login page.");    //TODO: Interface bootstrap
+				  setInterval(function(){$window.location.href = "/";}, 1500);
+				  $('.angular-success').show();
+				  $('.angular-error').hide();
+				  $('.angular-success').html("<strong>User registered</strong>");
+				}
+			  },
+			  function(data){
+			   if(data.status==400){
+				 console.log(data.data.error.data.reason);
+				 var error_msg = "<strong>" + data.data.error.data.reason + ". The following conditions must be fulfilled:</strong><ul>";
+				 for (index in data.data.error.data.conditions) {
+					error_msg += "<li>" + data.data.error.data.conditions[index] + "</li>";
+				 }
+				 error_msg += "</ul>";
+				  $('.angular-error').show();
+				  $('.angular-error').html(error_msg);
+			   }
+			 }
+		);
+      }
+  });
+  </script>
+</body>
+</html>

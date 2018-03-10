@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Login page</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+  <!-- Bootstrap and stylesheets-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <style>
+    input{
+      padding: 5px;
+      margin: 5px;
+    };
+    .crossed{
+      text-decoration: line-through;
+      background-color: red;
+    }
+  </style>
+</head>
+<body ng-app="app" ng-controller="ctrl" style="min-height:100%">
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12 col-md-10 col-md-offset-2 text-center">
+        <form id="loginForm" name="loginForm" class="col-sm-12 col-md-10 col-md-offset-1" style="margin: auto;margin-top: 20%;margin-bottom:20%;padding:20px;">
+          <h1 class="text-center">Login</h1></br>
+          <input type="text" ng-model="fields.username" placeholder="username or email" name="username" required></input></br>
+          <input type="password" ng-model="fields.password" placeholder="password" name="password" required></input></br>
+          <span ng-show="loginForm.mail.$error.email">Not a valid e-mail address</span>
+          <button type="submit" ng-click="validate()" form="loginForm" value="submit" class="btn-primary">Access your todos</button>
+          <div class="alert alert-danger angular-error" style="white-space: pre;text-align: left;margin-top:20px;display:none"></div>
+          <div class="alert alert-success angular-success" style="white-space: pre;text-align: left;margin-top:20px;display:none"></div>
+		  <h5 class="text-center">Don't have an account yet? <a href="register.html">Register now!</a></h5>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+<div class="afterLogin">
+  <a href="#" id="linkUserList" ng-click="displayUsers()">User list</a>
+
+  <ul class="userList">
+    <li ng-repeat="user in users" >
+      <span>{{user.id}} - {{user.username}} - {{user.email}}</span>
+    </li>
+  </ul>
+  <div class="container">
+    <div class="row">.
+      <div class="col-sm-12 col-md-10 col-md-offset-2 text-center">
+        <form id="addTodos" name="addTodos" style="background-color: rgb(235,235,235);border-radius: 5px;padding:10px;">
+          <h2>Add a task</h2>
+          <input type="text" id="todoField" ng-model="fields.todo" placeholder="Task to do" name="todo"></input>
+          <select id="todoDone" name="done" ng-model="fields.done">
+            <option value="true">Done</option>
+            <option value="false" selected>Not done yet</option>
+          </select>
+          <input type="hidden" id="hiddenId" ng-model="fields.hiddenId" name="hiddenId"></input>
+          <button type="submit" id="buttonAdd" ng-click="addTodos()" form="addTodos" value="submit" class="btn-primary">Add task</button>
+          <button type="submit" id="buttonEdit" ng-click="sendEditedTodo()" form="addTodos" value="submit" class="btn-warning">Edit task</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</br>
+  <ul style="list-style:none">
+    <li id="li-repeat" ng-repeat="x in todos" class="col-sm-3 col-md-3 col-md-offset-6" style="margin-left:35%;padding:10px;border-radius:5px;border:solid 1px rgb(225,225,225);margin-bottom:7px">
+      <span style="color:red;background-color:rgb(235,200,200);padding:10px;border-radius:5px;margin-left:-100px;margin-right:5px;" ng-click="deleteTodo(x)">x</span>
+      <span style="background-color:rgb(235,235,235);padding:10px;border:solid lightblue 1px;border-radius:5px;" ng-click="editTodo(x)">edit</span>
+      <span style="text-align: left;margin-left: 20px;" ng-style="{ 'text-decoration': crossed(x),'color': color(x)}">{{x.content}}</span>
+    </li>
+  </ul>
+
+  <script>
+
+  $('.angular-error').hide();
+  $('.afterLogin').hide();
+  $('#buttonEdit').hide();
+
+  var app=angular.module('app',[]);
+  app.controller('ctrl', function($scope,$http,$window) {
+    var id;
+	
+	$('#todoDone').val('false');
+
+    $scope.validate=function(){  //when the login form is submitted, sends the data to the server
+        $http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+        $http({
+          url: '/api/login',
+          method:'POST',
+          data: {
+            username:$scope.fields.username,
+            password:$scope.fields.password,
+          }
+        }).then(
+        function(data){
+          if(data.status==200){  //if we get code 200, the user is connected and we can get his token
+            console.log("User connected");
+            token=(data.data.token);
+
+            //Information and error statuses here
+            $('.angular-success').show();
+            $('.angular-error').hide();
+            $('.angular-success').html("<strong>User connected</strong>");
+
+            //Hides the login form after a delay
+            setTimeout(function(){$('#loginForm').hide();displayTodo(token);}, 1500);
+
+
+            //Displays the todo list by requesting it first to the server, with the token
+            function displayTodo(token){
+              $http({
+                headers: {"Authorization" : "Bearer "+token},
+                url: '/api/todos',
+                method:'GET',
+              }).then(function(dataGet){
+                //shows the main content (login content is hidden now)
+                $('.afterLogin').show();
+                if(dataGet.data==""){
+                  console.log("no tasks defined");
+                }else{
+                  $scope.todos=dataGet.data;
+                }
+              });
+            }
+
+            //Add a task to the list
+            $scope.addTodos=function(){
+              $http.defaults.headers.post["Authorization"] = "Bearer "+token;  //sending the token
+              var done;
+              $scope.fields.done=="true"?done=true:done=false;
+
+              var dataToPost=JSON.stringify({  //Parsing to JSON before sending
+                'content':$scope.fields.todo,
+                'done':done,
+              });
+
+              $http({
+                url: '/api/todos',
+                method:'POST',
+                data: dataToPost,
+              }).then(function(){
+                console.log("added");
+                displayTodo(token);  //refresh the todo list
+				$('#todoField').val('');
+				$('#todoDone').val('false');
+              });
+
+            }
+
+            //delete a task from its id
+            $scope.deleteTodo=function(x){
+              $http({
+                headers: {"Authorization" : "Bearer "+token},
+                url: '/api/todos/'+x.id,
+                method:'DELETE',
+              }).then(function(dataGet){
+                $('#li-repeat').html("");  //clears the todolist (issue when it's the last task)
+                displayTodo(token);
+              });
+
+            }
+
+			//Generate user list
+			$scope.displayUsers=function(){
+			  $http({
+				headers: {"Authorization" : "Bearer "+token},
+				url: '/api/users',
+				method:'GET',
+			  }).then(function(dataGet){
+				  var list="User list: \n \n";
+				  for(var i=0;i<dataGet.data.length;i++){
+					list+=dataGet.data[i].username+" - "+dataGet.data[i].email+" \n";
+				  }
+				  alert(list);
+			  });
+			}
+			
+			
+            //When we click on the edit button on a task, we send its id to the main form (hidden input).
+            //We replace the addTask button with a editTask one (launching diffrent functions)
+            //We also write the content in the main input. x corresponds to the task object.
+            $scope.editTodo=function(x){
+              $('#buttonEdit').show();
+              $('#buttonAdd').hide();
+              $('#todoField').val(x.content);
+              $('#todoDone').val(""+x.done);
+              $('#hiddenId').val(x.id);
+            }
+
+            //When we click on the editButton, we use the PATCH method and go back to the first interface (addButton and empty inputs)
+            $scope.sendEditedTodo=function(x){
+              var done;
+              $scope.fields.done=="true"?done=true:done=false;
+              var todoId=$('#hiddenId').val();
+              var dataToPost=JSON.stringify({
+                'content':$('#todoField').val(),
+                'done':done,
+              });
+
+              $http({
+                headers: {"Authorization" : "Bearer "+token},
+                url: '/api/todos/'+todoId,
+                method:'PATCH',
+                data:dataToPost,
+              }).then(function(dataGet){
+                displayTodo(token);
+                $('#buttonEdit').hide();
+                $('#buttonAdd').show();
+                $('#todoField').val("");
+				$('#todoDone').val('false');
+                $('#hiddenId').val("");
+              });
+            }
+          }
+        },
+        function(data){
+         if(data.status==401){    //401: bad login
+           console.log(data);
+           $('.angular-error').show();
+           $('.angular-error').html("<strong>Incorrect login</strong>");
+         }
+       });
+    }
+
+    $scope.crossed=function(x){  //Crosses each completed task
+      if(x.done==true){
+        return "line-through";}
+    }
+
+    $scope.color=function(x){    //Colors in grey each completed task
+      if(x.done==true){
+        return "grey";}
+    }
+  });
+  </script>
+</body>
+</html>

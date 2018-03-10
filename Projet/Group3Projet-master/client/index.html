@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RESTodo FrontEnd</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+    <!-- Bootstrap and stylesheets-->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <style>
+        .navbar { margin-bottom: 20px;}
+        input { padding: 5px; margin: 5px; }
+        .crossed { text-decoration: line-through; background-color: red; }
+        .btnDeleteTodo {
+            color:red;
+            background-color:rgb(235,200,200);
+            padding:10px;
+            border-radius:5px;
+            margin-left:-100px;
+            margin-right:5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body ng-app="app" ng-controller="ctrl" style="min-height:100%">
+
+<div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">RESTodo FrontEnd</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+                <li id="notConnectedNavBarItem" class="nav-item">
+                    <a class="nav-link disabled" href="#">Not connected</a>
+                </li>
+                <li id="connectedNavBarItem" class="nav-item dropdown" style="display:none;">
+                    <a class="nav-link dropdown-toggle" href="#" id="usernameNavBarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Username
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="usernameNavBarDropdown">
+                        <a id="logoutNavBarItem" class="dropdown-item" ng-click="logout()" href="#">Log out</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="message" class="alert"
+         style="white-space: pre;text-align: left;margin-top:20px;display:none"></div>
+
+    <div id="preLogin" class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-10 col-md-offset-2 text-center">
+                <div class="jumbotron">
+                    <h1>You must first log in to access RESTodo Frontend</h1>
+                    <p></p>
+                    <p><a id="goLoginGOASP" ng-click="login()" class="btn btn-success">Log in using GOASP</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="afterLogin" style="display:none;">
+        <div class="container">
+            <div class="row">.
+                <div class="col-sm-12 col-md-10 col-md-offset-2 text-center">
+                    <form id="addTodos" name="addTodos"
+                          style="background-color: rgb(235,235,235);border-radius: 5px;padding:10px;">
+                        <h2>Add a task</h2>
+                        <input type="text" id="todoField" ng-model="fields.todo" placeholder="Task to do" name="todo"/>
+                        <select id="todoDone" name="done" ng-model="fields.done">
+                            <option value="true">Done</option>
+                            <option value="false" selected>Not done yet</option>
+                        </select>
+                        <input type="hidden" id="hiddenId" ng-model="fields.hiddenId" name="hiddenId"/>
+                        <button type="submit" id="buttonAdd" ng-click="addTodo()" form="addTodos" value="submit"
+                                class="btn-primary">Add task
+                        </button>
+                        <button type="submit" id="buttonEdit" ng-click="sendEditedTodo()" form="addTodos" value="submit"
+                                class="btn-warning" style="display:none;">Edit task
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        </br>
+        <ul style="list-style:none">
+            <li id="li-repeat" ng-repeat="x in todos" class="col-sm-3 col-md-3 col-md-offset-6"
+                style="margin-left:35%;padding:10px;border-radius:5px;border:solid 1px rgb(225,225,225);margin-bottom:7px">
+                <span class="btnDeleteTodo" ng-click="deleteTodo(x)">x</span>
+                <span style="background-color:rgb(235,235,235);padding:10px;border:solid lightblue 1px;border-radius:5px;"
+                      ng-click="editTodo(x)">edit</span>
+                <span style="text-align: left;margin-left: 20px;" ng-style="{ 'text-decoration': crossed(x),'color': color(x)}">{{x.content}}</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    //Create restodo object if it doesn't exist
+    if (!window.restodo) {
+        window.restodo = {};
+    }
+
+    restodo.user = {
+        data: null, //Not logged in yet
+        username: function () {
+            if (this.data && this.data.payload && this.data.payload.username) {
+                return this.data.payload.username;
+            }
+            return "";
+        },
+        token: function () {
+            if (this.data && this.data.token) {
+                return this.data.token;
+            }
+            return "";
+        },
+        set: function (data) {
+            this.data = data;
+
+            var connected = !!this.data;
+
+            if (connected) {
+                $("#notConnectedNavBarItem").hide();
+                $("#connectedNavBarItem").show();
+                $("#usernameNavBarDropdown").text(this.username());
+                $("#preLogin").hide();
+                $("#afterLogin").show();
+            }
+            else {
+                $("#notConnectedNavBarItem").show();
+                $("#connectedNavBarItem").hide();
+                $("#preLogin").show();
+                $("#afterLogin").hide();
+            }
+
+        }
+    };
+
+    //Register GOASP parameters
+    restodo.goasp = {
+        scheme: "https",
+        domain: "group3.stremblay.com",
+        request_uri: "/goasp/request",
+        token_uri: "/goasp/token",
+        authorization_type: "code",
+        client_id: "ytuCRsoQmqTVsGzsaXo818p0TPq1lElI_-3iPgZcR2pXnJtaBds_wtF1wu53MswZ",
+        scope: "restodo_read restodo_add restodo_edit restodo_del",
+        state_cookie_name: "restodo_state",
+        redirect_uri: location.origin + location.pathname,
+        grant_type: "authorization_code"
+    };
+
+    restodo.util = {
+        cookies: {
+            set: function (name, value, expDays) {
+                var d = new Date();
+                d.setTime(d.getTime() + (expDays * 24 * 60 * 60 * 1000));
+                var expires = "expires=" + d.toUTCString();
+                document.cookie = name + "=" + value + ";" + expires + ";path=/;";
+            },
+            remove: function (name) {
+                this.set(name, "", -1); //Expired yesterday
+            },
+            get: function (name) {
+                name += "=";
+                var decodedCookie = decodeURIComponent(document.cookie);
+                var cookieArray = decodedCookie.split(';');
+                for (var i = 0; i < cookieArray.length; i++) {
+                    var cookie = cookieArray[i];
+                    while (cookie.charAt(0) === ' ') {
+                        cookie = cookie.substring(1);
+                    }
+                    if (cookie.indexOf(name) === 0) {
+                        return cookie.substring(name.length, cookie.length);
+                    }
+                }
+                return "";
+            }
+        },
+        randomString: function (length) {
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+            for (var i = 0; i < length; i++) {
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+            }
+            return text;
+        },
+        search: {
+            param: {},
+            parse: function () {
+                var searchStr = location.search.substr(0, 1) === "?" ? location.search.substr(1) : location.search;
+
+                var params = searchStr.split("&");
+
+                for (var index = 0; index < params.length; ++index) {
+                    var param = params[index];
+
+                    var pos = param.indexOf("=");
+                    var name;
+                    var value;
+                    if (pos >= 0) {
+                        name = param.substring(0, pos);
+                        value = param.substring(pos + 1);
+                    }
+                    else {
+                        name = param;
+                        value = null;
+                    }
+                    this.param[name] = value;
+                }
+            },
+            clear: function () {
+                window.history.replaceState({}, document.title, location.pathname);
+            },
+            has: function (name) {
+                return this.param.hasOwnProperty(name);
+            },
+            get: function (name) {
+                return this.param[name];
+            }
+        },
+        message: {
+            hide: function () {
+                $("#message").hide();
+            },
+            show: function (type, message) {
+                $("#message")
+                    .removeClass()
+                    .addClass("alert alert-" + type)
+                    .text(message)
+                    .show()
+                ;
+            }
+        }
+    };
+
+    //Extract parameters from search string then remove it from browser's URL
+    restodo.util.search.parse();
+    restodo.util.search.clear();
+
+    //Seems the only way to force an initially selected value
+    $(function () {
+        $('#todoDone').val('false');
+    });
+
+    var app = angular.module('app', []);
+
+    app.controller('ctrl', function ($scope, $http, $window) {
+
+        $scope.logout = function () {
+            restodo.user.set(null);
+            restodo.util.message.show("info", "Successfully logged out");
+        };
+
+        $scope.login = function () {
+            //Generate and store a state in cookie
+            var state = restodo.util.randomString(16);
+            restodo.util.cookies.set(restodo.goasp.state_cookie_name, state, 1 / 24); //Allow an hour. Even if user register, 1h is largely enough
+
+            //Build request permission URL
+            var url = restodo.goasp.scheme + "://" + restodo.goasp.domain + restodo.goasp.request_uri
+                + "?response_type=" + restodo.goasp.authorization_type
+                + "&client_id=" + restodo.goasp.client_id
+                + "&redirect_uri=" + restodo.goasp.redirect_uri
+                + "&scope=" + restodo.goasp.scope
+                + "&state=" + state;
+
+            //Redirect to request permission URL
+            location.href = url;
+        };
+
+        $scope.notAllowed = function () {
+            restodo.util.message.show("danger", "You are not allowed to perform this action. Please log back to continue. Note that's you'll have to perform your last action again.");
+            restodo.user.set(null);
+        }
+
+        //Displays the TO-DO list by requesting it first to the server, with the token
+        $scope.displayTodo = function() {
+            $http({
+                headers: {"Authorization": "Bearer " + restodo.user.token()},
+                url: '/api/todos',
+                method: 'GET'
+            }).then(
+                //$http success
+                function (dataGet) {
+                    if (dataGet.data == "") {
+                        console.log("no tasks defined");
+                    } else {
+                        $scope.todos = dataGet.data;
+                    }
+                },
+                //$http fail
+                function (data) {
+                    if (data && data.status === 401) {
+                        this.notAllowed;
+                    }
+                    else {
+                        restodo.util.message.show("danger", "An error occurred fetching TODOs. Please try again later.");
+                        console.log(data);
+                    }
+                }
+            );
+        };
+
+        //Add a task to the list
+        $scope.addTodo = function () {
+            var done;
+            $scope.fields.done == "true" ? done = true : done = false;
+
+            var dataToPost = JSON.stringify({  //Parsing to JSON before sending
+                'content': $scope.fields.todo,
+                'done': done,
+            });
+
+            $http({
+                headers: {"Authorization": "Bearer " + restodo.user.token()},
+                url: '/api/todos',
+                method: 'POST',
+                data: dataToPost,
+            }).then(
+                function () {
+                    console.log("added");
+                    $scope.displayTodo();  //refresh the to-do list
+                    $('#todoField').val('');
+                    $('#todoDone').val('false');
+                },
+                function (data) {
+                    if (data && data.status === 401) {
+                        this.notAllowed;
+                    }
+                    else {
+                        restodo.util.message.show("danger", "An error occurred creating TODO. Please try again later.");
+                        console.log(data);
+                    }
+                }
+            );
+
+        };
+
+        //delete a task from its id
+        $scope.deleteTodo = function (x) {
+            $http({
+                headers: {"Authorization": "Bearer " + restodo.user.token()},
+                url: '/api/todos/' + x.id,
+                method: 'DELETE',
+            }).then(
+                //$http success
+                function (dataGet) {
+                    $('#li-repeat').html("");  //clears the todolist (issue when it's the last task)
+                    $scope.displayTodo();
+                },
+                //$http fail
+                function (data) {
+                    if (data && data.status === 401) {
+                        this.notAllowed;
+                    }
+                    else {
+                        restodo.util.message.show("danger", "An error occurred deleting TODO. Please try again later.");
+                        console.log(data);
+                    }
+                }
+            );
+
+        };
+
+        //When we click on the edit button on a task, we send its id to the main form (hidden input).
+        //We replace the addTask button with a editTask one (launching diffrent functions)
+        //We also write the content in the main input. x corresponds to the task object.
+        $scope.editTodo = function (x) {
+            $('#buttonEdit').show();
+            $('#buttonAdd').hide();
+            $('#todoField').val(x.content);
+            $('#todoDone').val("" + x.done);
+            $('#hiddenId').val(x.id);
+        };
+
+        //When we click on the editButton, we use the PATCH method and go back to the first interface (addButton and empty inputs)
+        $scope.sendEditedTodo = function (x) {
+            var done = !!$scope.fields.done; // == "true";
+            var todoId = $('#hiddenId').val();
+            var dataToPost = JSON.stringify({
+                'content': $('#todoField').val(),
+                'done': done
+            });
+
+            $http({
+                headers: {"Authorization": "Bearer " + restodo.user.token()},
+                url: '/api/todos/' + todoId,
+                method: 'PATCH',
+                data: dataToPost
+            }).then(
+                //$http success
+                function (dataGet) {
+                    $scope.displayTodo();
+                    $('#buttonEdit').hide();
+                    $('#buttonAdd').show();
+                    $('#todoField').val("");
+                    $('#todoDone').val('false');
+                    $('#hiddenId').val("");
+                },
+                //$http fail
+                function (data) {
+                    if (data && data.status === 401) {
+                        this.notAllowed;
+                    }
+                    else {
+                        restodo.util.message.show("danger", "An error occurred updating TODO. Please try again later.");
+                        console.log(data);
+                    }
+                }
+            );
+        };
+
+        $scope.crossed = function (x) {  //Crosses each completed task
+            if (x.done == true) {
+                return "line-through";
+            }
+        };
+
+        $scope.color = function (x) {    //Colors in grey each completed task
+            if (x.done == true) {
+                return "grey";
+            }
+        };
+
+        //Did we came back from GOASP login and received an authorization code?
+        if (restodo.util.search.has("error")) {
+            var errorCode = restodo.util.search.get("error");
+            var message;
+            if (errorCode === "server_error") {
+                message = "Authentication server is currently unable to process this request. Please try again later";
+            }
+            else if (errorCode === "invalid_scope") {
+                message = "Requested privileges do not exist.";
+            }
+            else if (errorCode === "unauthorized_client") {
+                message = "You are not authorized to request these privileges.";
+            }
+            else if (errorCode === "unsupported_response_type") {
+                message = "Authentication server do not support authorization type requested by this application: " + restodo.goasp.authorization_type;
+            }
+            else if (errorCode === "access_denied") {
+                message = "Access to requested privileges have been denied.";
+            }
+            else {
+                message = "An unknown error has been received.";
+                console.log("Unknown error received: " + errorCode);
+            }
+
+            restodo.util.message.show("danger", message);
+        }
+        else if (restodo.util.search.has("code") && restodo.util.search.has("state")) {
+            //Make sur the state is valid
+            var recvState = restodo.util.search.get("state");
+            var cookieState = restodo.util.cookies.get(restodo.goasp.state_cookie_name);
+
+            if (recvState && cookieState && recvState === cookieState) {
+                //Inform user we're requesting token
+                restodo.util.message.show("info", "Fetching authentication token...");
+
+                //Read authorization code
+                var authCode = restodo.util.search.get("code");
+
+                //Build token request url
+                var url = restodo.goasp.scheme + "://" + restodo.goasp.domain + restodo.goasp.token_uri;
+
+                $http({
+                    url: url,
+                    method: "POST",
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    data: $.param({
+                        grant_type: restodo.goasp.grant_type,
+                        code: authCode,
+                        redirect_uri: restodo.goasp.redirect_uri,
+                        client_id: restodo.goasp.client_id
+                    })
+                }).then(
+                    //$http success
+                    function (data) {
+                        if (data.status === 200) {
+                            var json = data.data;
+                            var access_token = json.access_token;
+
+                            //Split access_token and extract payload
+                            var token_split = access_token.split(".");
+                            if (token_split.length === 3) {
+                                var payloadStr = atob(token_split[1]);
+                                var payload = JSON.parse(payloadStr);
+
+                                restodo.user.set({
+                                    token: access_token,
+                                    payload: payload
+                                });
+
+                                if (restodo.user.username() && restodo.user.token()) {
+                                    restodo.util.message.show("success", "Successfully logged in as " + restodo.user.username());
+                                    $scope.displayTodo();
+                                }
+                                else {
+                                    restodo.util.message.show("danger", "Received authentication token is invalid. Please try to log in again.");
+                                    restodo.user.set(null);
+                                }
+                            }
+                            else {
+                                restodo.util.message.show("danger", "Received authentication token is invalid. Please try to log in again.");
+                            }
+                        }
+                        else {
+                            restodo.util.message.show("danger", "Authentication token fetch failed. Please try to log in again.");
+                        }
+                    },
+                    //$http fail
+                    function (data) {
+                        restodo.util.message.show("danger", "Authentication token fetch failed. Please try to log in again.");
+                    }
+                );
+            }
+            else {
+                //Disconnect user by precaution, even if he's not supposed to be connected yey
+                restodo.util.user.set(null);
+                restodo.util.message.show("danger", "Unexpected authorization code received.");
+            }
+        }
+        //We no longer need state cookie
+        restodo.util.cookies.remove(restodo.goasp.state_cookie_name);
+    });
+</script>
+</body>
+</html>

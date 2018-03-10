@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <style>
+        /* Space out content a bit */
+        body {
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+
+        /* Everything but the jumbotron gets side spacing for mobile first views */
+        .header,
+        .footer {
+            padding-right: 1rem;
+            padding-left: 1rem;
+        }
+
+        /* Custom page header */
+        .header {
+            padding-bottom: 1rem;
+            border-bottom: .05rem solid #e5e5e5;
+        }
+
+        /* Make the masthead heading the same height as the navigation */
+        .header h3 {
+            margin-top: 0;
+            margin-bottom: 0;
+            line-height: 3rem;
+        }
+
+        /* Custom page footer */
+        .footer {
+            padding-top: 1.5rem;
+            color: #777;
+            border-top: .05rem solid #e5e5e5;
+        }
+
+        /* Customize container */
+        @media (min-width: 48em) {
+            .container {
+                max-width: 46rem;
+            }
+        }
+        .container-narrow > hr {
+            margin: 2rem 0;
+        }
+
+        /* Main marketing message and sign up button */
+        .jumbotron {
+            text-align: center;
+            border-bottom: .05rem solid #e5e5e5;
+        }
+        /*.jumbotron .btn {
+            padding: .75rem 1.5rem;
+            font-size: 1.5rem;
+        }*/
+
+        /* Responsive: Portrait tablets and up */
+        @media screen and (min-width: 48em) {
+            /* Remove the padding we set earlier */
+            .header,
+            .footer {
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            /* Space out the masthead */
+            .header {
+                margin-bottom: 2rem;
+            }
+
+            /* Remove the bottom border on the jumbotron for visual effect */
+            .jumbotron {
+                border-bottom: 0;
+            }
+        }
+    </style>
+    <style>
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+        }
+        .form-signin .form-signin-heading,
+        .form-signin .checkbox {
+            margin-bottom: 10px;
+        }
+        .form-signin .checkbox {
+            font-weight: 400;
+        }
+        .form-signin .form-control {
+            position: relative;
+            box-sizing: border-box;
+            height: auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .form-signin .form-control:focus {
+            z-index: 2;
+        }
+        /*.form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }*/
+        .form-signin button[type="submit"] {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    </style>
+    <style>
+        .jumbotron ul {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header clearfix">
+            <h3 class="text-muted">{{GOASP_APP_NAME}}</h3>
+            <h5 class="text-muted text-right">{{username (email)}}</h5>
+        </header>
+
+        <main role="main">
+            {{error_message}}
+            <div class="jumbotron">
+                {{form}}
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>                            )
+    <script type="text/javascript">
+        //Clear query string from url, for aesthetic reason
+        window.history.replaceState({}, document.title, location.pathname);
+    </script>
+</body>
+</html>

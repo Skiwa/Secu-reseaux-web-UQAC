@@ -1,0 +1,21 @@
+<h1 class="display-3">Register</h1>
+<form class="form-signin" method="post" action="{{submit_url}}">
+    <input type="hidden" name="goaspredirect" value="{{goaspredirect}}" />
+
+    <h2 class="form-signin-heading">New account</h2>
+    <label for="inputUsername" class="sr-only">Username</label>
+    <input id="inputUsername" type="text" class="form-control" name="username" value="{{username}}" placeholder="Username" required autofocus />
+
+    <label for="inputEmail" class="sr-only">Email address</label>
+    <input id="inputEmail" type="email" class="form-control" name="email" value="{{email}}" placeholder="Email address" required />
+    <label for="inputConfEmail" class="sr-only">Confirm email address</label>
+    <input id="inputConfEmail" type="email" class="form-control" name="confemail" value="{{confemail}}" placeholder="Confirm email address" required />
+
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input id="inputPassword" type="password" class="form-control" name="password" value="" placeholder="Password" required />
+    <label for="inputConfPwd" class="sr-only">Confirm password</label>
+    <input id="inputConfPwd" type="password" class="form-control" name="confpwd" value="" placeholder="Confirm password" required />
+
+    <button class="btn btn-lg btn-primary btn-block" type="submit" name="submit" value="submit">Register</button>
+    <p><a class="btn btn-sm btn-success btn-block" href="{{switch_url}}" role="button">{{switch_label}}</a></p>
+</form>
